@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление ФНС России по Санкт-Петербургу: Налоговый Микс</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- Tailwind Config for Modern FNS Theme -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        fns: {
+                            blue: '#0055a4',
+                            dark: '#0a192f',
+                            red: '#da291c',
+                            light: '#f8fafc'
+                        }
+                    },
+                    animation: {
+                        'float-slow': 'float 8s ease-in-out infinite',
+                        'blob': 'blob 10s infinite alternate',
+                        'pop-in': 'popIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' }
+                        },
+                        popIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.95) translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc;
+            overflow-x: hidden;
+        }
+        
+        /* Modern Glassmorphism Panels */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 40px -10px rgba(0, 30, 80, 0.08);
+        }
+        
+        /* Clean Inputs */
+        .modern-input {
+            background: rgba(255,255,255,0.9);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+        }
+        .modern-input:focus {
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02), 0 0 0 4px rgba(0, 85, 164, 0.15);
+            background: #ffffff;
+        }
+
+        /* Custom scrollbar for modern look */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        #canvas-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #dom-cloud-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .cloud-item {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            will-change: transform, left, top;
+            transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1), top 0.4s cubic-bezier(0.16, 1, 0.3, 1), font-size 0.3s ease;
+        }
+
+        @keyframes flyUp {
+            0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+            10% { opacity: 1; transform: translate(0, -10vh) scale(1.2); }
+            90% { opacity: 1; }
+            100% { transform: translate(var(--drift, 0px), -120vh) scale(1); opacity: 0; }
+        }
+        .emoji-fly {
+            position: absolute;
+            bottom: -50px;
+            font-size: 2rem;
+            animation: flyUp 3s ease-out forwards;
+            pointer-events: none;
+            z-index: 5;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+            will-change: transform, opacity;
+        }
+
+        /* Animation delays for background blobs */
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col selection:bg-fns-red selection:text-white relative">
+
+    <!-- Modern Animated Background Blobs -->
+    <div id="bg-blobs" class="fixed inset-0 z-0 overflow-hidden pointer-events-none transition-opacity duration-1000">
+        <div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-blue-400/20 rounded-full mix-blend-multiply filter blur-[100px] animate-blob"></div>
+        <div class="absolute top-[20%] right-[-10%] w-[45vw] h-[45vw] bg-red-400/10 rounded-full mix-blend-multiply filter blur-[100px] animate-blob animation-delay-2000"></div>
+        <div class="absolute bottom-[-20%] left-[20%] w-[60vw] h-[60vw] bg-indigo-300/20 rounded-full mix-blend-multiply filter blur-[120px] animate-blob animation-delay-4000"></div>
+    </div>
+
+    <!-- Modern Header -->
+    <header class="bg-white/80 backdrop-blur-xl border-b border-slate-200/80 sticky top-0 z-50 transition-all duration-500 shadow-sm" id="main-header">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="bg-gradient-to-br from-fns-blue to-blue-700 p-2.5 rounded-xl shadow-lg shadow-blue-500/30">
+                    <svg class="w-8 h-8 text-white fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-extrabold tracking-tight text-fns-dark leading-none">НАЛОГОВЫЙ МИКС</h1>
+                    <p class="text-xs md:text-sm text-slate-500 font-medium mt-1">Управление ФНС России по Санкт-Петербургу</p>
+                </div>
+            </div>
+            <div id="header-controls" class="hidden">
+                <button onclick="resetApp()" class="text-sm font-semibold text-slate-500 hover:text-fns-blue bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl transition">
+                    Выход
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main id="app-container" class="flex-grow flex items-center justify-center p-4 md:p-6 lg:p-8 relative z-10 max-w-7xl mx-auto w-full">
+        
+        <!-- Start View -->
+        <div id="view-start" class="glass-panel rounded-3xl p-8 md:p-12 max-w-md w-full text-center animate-pop-in">
+            <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <svg class="w-8 h-8 text-fns-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-fns-dark mb-3">Добро пожаловать</h2>
+            <p class="text-slate-500 mb-8 font-medium">Выберите вашу роль для старта интерактивной сессии.</p>
+            
+            <div class="flex flex-col gap-4">
+                <button onclick="initGuest()" class="w-full bg-gradient-to-r from-fns-blue to-blue-600 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-blue-500/30 transition transform hover:-translate-y-1 hover:shadow-blue-500/40">
+                    Войти как Участник
+                </button>
+                <button onclick="initHost()" class="w-full bg-white hover:bg-slate-50 text-slate-700 border-2 border-slate-200 hover:border-fns-blue/50 font-bold py-4 px-6 rounded-2xl shadow-sm transition transform hover:-translate-y-1">
+                    Панель Модератора
+                </button>
+            </div>
+        </div>
+
+        <!-- Guest View -->
+        <div id="view-guest" class="hidden glass-panel rounded-3xl p-6 md:p-10 max-w-lg w-full text-center animate-pop-in shadow-2xl shadow-blue-900/5">
+            <h2 class="text-2xl md:text-3xl font-extrabold text-fns-dark mb-2">Ваш вклад в облако</h2>
+            <p class="text-slate-500 mb-8 font-medium">Отправьте ассоциацию или картинку, и она появится на главном экране!</p>
+            
+            <form id="guest-form" class="space-y-5" onsubmit="submitWord(event)">
+                <div class="relative">
+                    <input type="text" id="word-input" maxlength="25" autocomplete="off"
+                        class="modern-input w-full text-center text-2xl md:text-3xl font-black text-fns-dark p-5 border border-slate-200 rounded-2xl outline-none uppercase placeholder:text-slate-300 placeholder:font-semibold"
+                        placeholder="СЛОВО...">
+                </div>
+                
+                <div class="flex items-center justify-center gap-4">
+                    <div class="h-px bg-slate-200 flex-grow"></div>
+                    <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Или</span>
+                    <div class="h-px bg-slate-200 flex-grow"></div>
+                </div>
+
+                <div class="border-2 border-dashed border-slate-200 hover:border-fns-blue bg-slate-50/50 rounded-2xl p-6 text-center transition cursor-pointer relative overflow-hidden group" id="image-upload-area" onclick="document.getElementById('image-input').click()">
+                    <input type="file" id="image-input" accept="image/*" class="hidden" onchange="handleImageSelect(event)">
+                    <div id="image-preview-container" class="hidden flex flex-col items-center">
+                        <img id="image-preview" class="max-h-32 rounded-xl shadow-md mb-3 object-cover">
+                        <button type="button" class="text-sm bg-white border border-red-200 text-fns-red font-bold px-4 py-1.5 rounded-lg hover:bg-red-50 transition" onclick="clearImage(event)">Удалить картинку</button>
+                    </div>
+                    <div id="image-upload-prompt" class="text-slate-500 group-hover:text-fns-blue transition">
+                        <svg class="mx-auto h-10 w-10 mb-2 opacity-50 group-hover:opacity-100 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <span class="text-sm font-semibold">Загрузить изображение</span>
+                    </div>
+                </div>
+
+                <button type="submit" id="submit-btn" class="w-full bg-gradient-to-r from-fns-red to-red-600 hover:to-red-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-red-500/30 transition transform hover:-translate-y-1 text-lg">
+                    Отправить на экран
+                </button>
+            </form>
+            
+            <div id="guest-msg" class="mt-4 text-sm font-bold opacity-0 transition-opacity duration-300"></div>
+
+            <div class="mt-8 pt-6 border-t border-slate-100">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Быстрые реакции</p>
+                <div id="grid-emoji" class="flex flex-wrap justify-center gap-2 max-h-40 overflow-y-auto p-1 scroll-smooth">
+                    <!-- Заполняется через JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Host View -->
+        <div id="view-host" class="hidden w-full h-full min-h-[calc(100vh-120px)] flex flex-col md:flex-row gap-6 transition-all duration-700 ease-in-out">
+            
+            <!-- Sidebar -->
+            <div id="host-sidebar" class="glass-panel w-full md:w-80 rounded-3xl p-6 flex flex-col shrink-0 overflow-y-auto transition-all duration-500 origin-left z-30">
+                
+                <div id="connection-status" class="mb-6 text-xs font-bold px-4 py-2.5 rounded-xl bg-slate-100 text-slate-500 text-center animate-pulse flex items-center justify-center gap-2">
+                    <div class="w-2 h-2 bg-slate-400 rounded-full"></div>
+                    Подключение...
+                </div>
+
+                <div class="mb-6 flex flex-col items-center bg-white/60 backdrop-blur rounded-2xl p-5 border border-slate-200/60 shadow-sm">
+                    <p class="text-xs font-bold text-fns-blue uppercase tracking-wide mb-3">QR-код для входа</p>
+                    <div id="qrcode" class="mb-3 bg-white p-2 rounded-xl shadow-sm border border-slate-100"></div>
+                    <p class="text-[10px] text-center text-slate-400 font-medium break-all" id="qr-link"></p>
+                </div>
+
+                <div class="mb-6 space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-200/60 pb-2">
+                        <span class="text-sm font-bold text-slate-700 uppercase tracking-wide">Модерация</span>
+                        <span id="word-count" class="bg-fns-blue text-white text-[10px] px-2.5 py-1 rounded-full font-bold shadow-sm">0</span>
+                    </div>
+                    
+                    <div class="h-40 overflow-y-auto rounded-xl p-2 bg-white/50 border border-slate-200/50 space-y-1.5" id="moderation-list">
+                        <p class="text-xs text-slate-400 text-center py-4 font-medium">Слов пока нет</p>
+                    </div>
+                    
+                    <button onclick="clearCloud()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold py-2.5 rounded-xl border border-red-100 transition flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        Удалить всё
+                    </button>
+                </div>
+
+                <div class="mb-6 space-y-4">
+                    <p class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200/60 pb-2">Внешний вид</p>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Форма облака</label>
+                            <select id="shape-select" onchange="updateCloudSettings()" class="w-full mt-1 bg-white border border-slate-200 text-sm rounded-xl p-2.5 font-medium text-slate-700 focus:border-fns-blue focus:ring-2 focus:ring-blue-100 outline-none transition shadow-sm cursor-pointer">
+                                <option value="circle">Круг</option>
+                                <option value="ellipse">Эллипс</option>
+                                <option value="star">Звезда</option>
+                                <option value="rhombus">Ромб</option>
+                                <option value="shield">Щит</option>
+                                <option value="heart">Сердце</option>
+                                <option value="square">Квадрат</option>
+                                <option value="triangle">Треугольник</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">Анимация</label>
+                            <select id="anim-select" onchange="updateCanvasAnimation()" class="w-full mt-1 bg-white border border-slate-200 text-sm rounded-xl p-2.5 font-medium text-slate-700 focus:border-fns-blue focus:ring-2 focus:ring-blue-100 outline-none transition shadow-sm cursor-pointer">
+                                <option value="none">Статика</option>
+                                <option value="flying">Свободный полет (Кинетика)</option>
+                                <option value="float">Плавное парение (Float)</option>
+                                <option value="pulse">Пульсация (Pulse)</option>
+                                <option value="spin">Вращение (Spin)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-4">
+                    <button onclick="toggleFinalScreen()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg transition transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                        На весь экран
+                    </button>
+                </div>
+            </div>
+
+            <!-- Canvas Area -->
+            <div id="host-canvas-area" class="glass-panel flex-grow rounded-3xl relative overflow-hidden flex flex-col transition-all duration-700 z-10 border border-white/60 shadow-xl shadow-slate-200/50">
+                
+                <!-- Emoji Background Layer -->
+                <div id="emoji-layer" class="absolute inset-0 pointer-events-none z-10 overflow-hidden"></div>
+
+                <!-- Word Cloud Container -->
+                <div id="canvas-wrapper" class="transition-all duration-700 ease-in-out p-4 relative z-20">
+                    <div id="dom-cloud-container"></div>
+                </div>
+                
+                <!-- Empty State -->
+                <div id="empty-state" class="absolute inset-0 flex items-center justify-center flex-col text-slate-400 pointer-events-none transition-opacity duration-500 z-30">
+                    <div class="bg-white/50 backdrop-blur rounded-full p-6 mb-4 shadow-sm border border-slate-100">
+                        <svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                    </div>
+                    <p class="text-lg font-medium text-slate-500">Ждём слова участников...</p>
+                </div>
+                
+                <!-- Emoji Counters (Bottom) -->
+                <div id="reaction-counters" class="absolute bottom-6 left-0 w-full flex justify-center gap-3 flex-wrap z-40 pointer-events-none px-6 transition-opacity duration-500">
+                    <!-- Заполняется через JS -->
+                </div>
+
+                <!-- Exit Fullscreen Button -->
+                <button id="exit-final-btn" onclick="toggleFinalScreen()" class="hidden absolute bottom-6 right-6 bg-white/80 backdrop-blur-md hover:bg-white text-fns-dark p-3.5 rounded-full shadow-xl border border-slate-200 transition-all z-50 transform hover:scale-105 pointer-events-auto">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 14h6m0 0v6m0-6l-7 7m17-11h-6m0 0V4m0 6l-7-7M4 10h6m0 0V4m0 6l-7-7m17 11h-6m0 0v6m0-6l7 7"></path></svg>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Firebase SDK Integration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEkbNyE3F656WsA8XS2GWcoYS8zlVuwuE",
+            authDomain: "mix1-911c9.firebaseapp.com",
+            projectId: "mix1-911c9",
+            storageBucket: "mix1-911c9.firebasestorage.app",
+            messagingSenderId: "71105282952",
+            appId: "1:71105282952:web:b80fc4e3bf78434ddaf03d",
+            measurementId: "G-4KT5YHWRR2"
+        };
+
+        window.appData = {
+            db: null,
+            collectionRef: null,
+            items: [], 
+            isFinalScreen: false
+        };
+            
+        window.toggleFinalScreen = () => {
+            const header = document.getElementById('main-header');
+            const sidebar = document.getElementById('host-sidebar');
+            const exitBtn = document.getElementById('exit-final-btn');
+            const canvasArea = document.getElementById('host-canvas-area');
+            const bgBlobs = document.getElementById('bg-blobs');
+            const container = document.getElementById('app-container');
+
+            window.appData.isFinalScreen = !window.appData.isFinalScreen;
+            
+            if (window.appData.isFinalScreen) {
+                // Прячем всё лишнее для чистого режима
+                header.classList.add('-translate-y-full', 'opacity-0');
+                sidebar.classList.add('hidden', 'md:hidden');
+                
+                // Делаем холст огромным и прозрачным
+                container.classList.remove('max-w-7xl', 'p-4', 'md:p-6', 'lg:p-8');
+                container.classList.add('p-0');
+                
+                canvasArea.classList.remove('glass-panel', 'border', 'shadow-xl', 'rounded-3xl');
+                canvasArea.classList.add('bg-transparent', 'rounded-none');
+                
+                // Фон делаем очень чистым (убираем пятна)
+                bgBlobs.classList.add('opacity-0');
+                document.body.classList.add('bg-white');
+                document.body.classList.remove('bg-slate-50');
+
+                exitBtn.classList.remove('hidden');
+            } else {
+                // Возвращаем как было
+                header.classList.remove('-translate-y-full', 'opacity-0');
+                sidebar.classList.remove('hidden', 'md:hidden');
+                sidebar.classList.add('md:flex');
+                
+                container.classList.add('max-w-7xl', 'p-4', 'md:p-6', 'lg:p-8');
+                container.classList.remove('p-0');
+                
+                canvasArea.classList.add('glass-panel', 'border', 'shadow-xl', 'rounded-3xl');
+                canvasArea.classList.remove('bg-transparent', 'rounded-none');
+                
+                bgBlobs.classList.remove('opacity-0');
+                document.body.classList.remove('bg-white');
+                document.body.classList.add('bg-slate-50');
+
+                exitBtn.classList.add('hidden');
+            }
+            setTimeout(renderDOMCloud, 700); // Ждем окончания анимации CSS
+        };
+
+        window.clearCloud = async () => {
+            if (!confirm("Удалить ВСЕ слова и реакции с экрана у всех участников?")) return;
+            
+            if (window.appData.collectionRef && !window.appData.collectionRef.fake) {
+                try {
+                    const snapshot = await getDocs(query(window.appData.collectionRef));
+                    snapshot.forEach((docSnapshot) => {
+                        deleteDoc(docSnapshot.ref);
+                    });
+                } catch (e) {
+                    console.error("Ошибка при очистке:", e);
+                }
+            }
+        };
+
+        window.deleteWord = async (wordText) => {
+            if (!confirm(`Удалить слово "${wordText}"?`)) return;
+            
+            const item = window.appData.items.find(i => i.text === wordText);
+            if (!item || !item.refs) return;
+            
+            if (window.appData.collectionRef && !window.appData.collectionRef.fake) {
+                for (const ref of item.refs) {
+                    try { await deleteDoc(ref); } catch (e) { console.error(e); }
+                }
+            }
+        };
+
+        window.handleImageSelect = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                compressImage(event.target.result, 150, 150).then(compressedBase64 => {
+                    window.appData.selectedImageData = compressedBase64;
+                    document.getElementById('image-upload-prompt').classList.add('hidden');
+                    document.getElementById('image-preview-container').classList.remove('hidden');
+                    document.getElementById('image-preview').src = compressedBase64;
+                    document.getElementById('word-input').value = ''; 
+                });
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.clearImage = (e) => {
+            e.stopPropagation();
+            window.appData.selectedImageData = null;
+            document.getElementById('image-input').value = '';
+            document.getElementById('image-upload-prompt').classList.remove('hidden');
+            document.getElementById('image-preview-container').classList.add('hidden');
+            document.getElementById('image-preview').src = '';
+        };
+
+        function compressImage(base64Str, maxWidth, maxHeight) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.src = base64Str;
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > height) {
+                        if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; }
+                    } else {
+                        if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                };
+            });
+        }
+
+        window.submitWord = (e) => {
+            e.preventDefault();
+            const input = document.getElementById('word-input');
+            const btn = document.getElementById('submit-btn');
+            const word = input.value.trim().toUpperCase();
+            const imageData = window.appData.selectedImageData;
+            
+            if (!word && !imageData) return;
+
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="animate-spin h-5 w-5 mx-auto text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+
+            const docData = { timestamp: Date.now() };
+            if (imageData) {
+                docData.type = 'image';
+                docData.data = imageData;
+            } else {
+                docData.type = 'text';
+                docData.text = word;
+            }
+
+            if (window.appData.collectionRef && !window.appData.collectionRef.fake) {
+                addDoc(window.appData.collectionRef, docData).catch(error => console.error(error));
+            }
+            
+            setTimeout(() => {
+                input.value = '';
+                if (imageData) window.clearImage({stopPropagation: ()=>{}});
+                showMsg('guest-msg', '✨ Отправлено!', 'text-green-600');
+                btn.disabled = false;
+                btn.innerText = 'Отправить на экран';
+                setTimeout(() => input.focus(), 100);
+            }, 300);
+        };
+
+        const emojisList = ['👍', '❤️', '🚀', '🔥', '💼', '💰', '👏', '🙌', '🤝', '💡', '📈', '📊', '🎯', '✅', '🌟', '✨', '🧠', '☕', '📝', '📎'];
+
+        window.renderReactions = () => {
+            const gridEmoji = document.getElementById('grid-emoji');
+            if (gridEmoji) {
+                gridEmoji.innerHTML = emojisList.map(e => `<button type="button" onclick="sendEmoji('${e}')" class="hover:scale-125 transition-transform active:scale-95 text-3xl p-3 bg-slate-100/50 rounded-2xl shadow-sm border border-slate-200 hover:bg-white hover:shadow-md">${e}</button>`).join('');
+            }
+        };
+
+        window.sendEmoji = (payload) => {
+            const docData = { timestamp: Date.now(), type: 'emoji', payload: payload };
+            if (window.appData.collectionRef && !window.appData.collectionRef.fake) {
+                addDoc(window.appData.collectionRef, docData).catch(e => console.error(e));
+            }
+            showMsg('guest-msg', 'Реакция полетела!', 'text-green-600');
+        };
+
+        window.spawnFlyingEmoji = (payload) => {
+            const el = document.createElement('div');
+            el.innerText = payload;
+            el.className = 'emoji-fly';
+            el.style.left = Math.random() * 80 + 10 + '%'; 
+            const drift = (Math.random() - 0.5) * 400; 
+            el.style.setProperty('--drift', `${drift}px`);
+            
+            const emojiLayer = document.getElementById('emoji-layer');
+            if (emojiLayer) emojiLayer.appendChild(el);
+            
+            setTimeout(() => el.remove(), 3000);
+        };
+
+        function switchView(viewId) {
+            ['view-start', 'view-guest', 'view-host'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+            
+            const headerControls = document.getElementById('header-controls');
+            if (viewId === 'view-start') {
+                headerControls.classList.add('hidden');
+            } else {
+                headerControls.classList.remove('hidden');
+            }
+        }
+
+        function showMsg(elementId, text, colorClass) {
+            const el = document.getElementById(elementId);
+            el.className = `mt-4 text-sm font-bold transition-opacity duration-300 opacity-100 ${colorClass}`;
+            el.innerText = text;
+            setTimeout(() => {
+                el.classList.remove('opacity-100');
+                el.classList.add('opacity-0');
+            }, 2500);
+        }
+
+        function checkUrlForGuestMode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('mode') === 'guest') {
+                window.initGuest();
+            }
+        }
+
+        function setupHostEnvironment() {
+            generateQRCode();
+            startFirebaseListener();
+            window.addEventListener('resize', () => {
+                clearTimeout(window.appData.resizeTimer);
+                window.appData.resizeTimer = setTimeout(() => {
+                    if (window.appData.isHost) renderDOMCloud();
+                }, 300);
+            });
+        }
+
+        function generateQRCode() {
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('mode', 'guest');
+            const targetUrl = currentUrl.toString();
+            document.getElementById('qr-link').innerText = targetUrl;
+            
+            new QRCode(qrContainer, {
+                text: targetUrl,
+                width: 160,
+                height: 160,
+                colorDark: "#0055a4",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.L
+            });
+        }
+
+        function startFirebaseListener() {
+            if (window.appData.collectionRef && window.appData.collectionRef.fake) return;
+
+            const q = query(window.appData.collectionRef); 
+            let initialLoad = true;
+            updateConnectionStatus("Подключение...", "bg-blue-50 text-blue-600 border border-blue-100", "bg-blue-400");
+
+            window.appData.unsubscribe = onSnapshot(q, (snapshot) => {
+                updateConnectionStatus("Синхронизировано", "bg-green-50 text-green-600 border border-green-100", "bg-green-500");
+                
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === "added") {
+                        const data = change.doc.data();
+                        if (data.type === 'emoji' && !initialLoad && window.appData.isHost) {
+                            window.spawnFlyingEmoji(data.payload);
+                        }
+                    }
+                });
+                initialLoad = false;
+
+                let count = 0;
+                let textsMap = new Map();
+                let images = [];
+                let reactionCounts = {}; 
+                
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.type === 'emoji') {
+                        reactionCounts[data.payload] = (reactionCounts[data.payload] || 0) + 1;
+                        return;
+                    }
+
+                    if (data.type === 'image' && data.data) {
+                        images.push({ type: 'image', data: data.data, id: doc.id });
+                        count++;
+                    } else if (data.text) {
+                        const w = data.text;
+                        if (!textsMap.has(w)) textsMap.set(w, { count: 0, refs: [] });
+                        const mapEntry = textsMap.get(w);
+                        mapEntry.count += 1;
+                        mapEntry.refs.push(doc.ref);
+                        count++;
+                    }
+                });
+
+                window.renderReactionCounters(reactionCounts);
+
+                window.appData.items = [];
+                textsMap.forEach((val, key) => {
+                    window.appData.items.push({ type: 'text', text: key, weight: val.count, refs: val.refs });
+                });
+                window.appData.items = window.appData.items.concat(images);
+                window.appData.items.sort((a, b) => (b.weight || 0) - (a.weight || 0));
+                window.appData.items = window.appData.items.slice(0, 100); // Ограничение
+
+                document.getElementById('word-count').innerText = count;
+
+                // Обновляем список модерации
+                const modContainer = document.getElementById('moderation-list');
+                if (modContainer && window.appData.isHost) {
+                    const textItems = window.appData.items.filter(i => i.type === 'text');
+                    if (textItems.length > 0) {
+                        modContainer.innerHTML = textItems.map(item => `
+                            <div class="flex justify-between items-center bg-white border border-slate-100 px-3 py-2 rounded-lg shadow-sm hover:border-fns-blue transition group">
+                                <span class="text-[11px] font-bold text-slate-700 truncate pr-2 tracking-wide" title="${item.text}">${item.text} <span class="text-[10px] text-fns-blue bg-blue-50 px-1.5 py-0.5 rounded ml-1">x${item.weight}</span></span>
+                                <button onclick="deleteWord('${item.text}')" class="text-slate-300 hover:text-red-500 transition opacity-50 group-hover:opacity-100" title="Удалить">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+                        `).join('');
+                    } else {
+                        modContainer.innerHTML = '<p class="text-xs text-slate-400 text-center py-4 font-medium">Слов пока нет</p>';
+                    }
+                }
+                
+                const emptyState = document.getElementById('empty-state');
+                if (count > 0) {
+                    emptyState.classList.add('opacity-0');
+                    clearTimeout(window.appData.renderTimer);
+                    window.appData.renderTimer = setTimeout(() => { renderDOMCloud(); }, 150); 
+                } else {
+                    emptyState.classList.remove('opacity-0');
+                    document.getElementById('dom-cloud-container').innerHTML = '';
+                }
+            });
+        }
+
+        window.renderReactionCounters = (counts) => {
+            const container = document.getElementById('reaction-counters');
+            if (!container) return;
+            const sortedEmojis = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+                
+            if (sortedEmojis.length === 0) { container.innerHTML = ''; return; }
+            container.innerHTML = sortedEmojis.map(([emoji, count]) => `
+                <div class="flex items-center gap-1.5 bg-white/70 backdrop-blur-lg border border-white/50 px-3 py-1.5 rounded-2xl shadow-sm text-base font-bold text-slate-700">
+                    <span>${emoji}</span>
+                    <span class="text-xs text-slate-500">${count}</span>
+                </div>
+            `).join('');
+        };
+
+        window.updateConnectionStatus = (text, containerClasses, dotClass) => {
+            const el = document.getElementById('connection-status');
+            if (el) {
+                el.className = `mb-6 text-xs font-bold px-4 py-2.5 rounded-xl text-center flex items-center justify-center gap-2 transition-colors ${containerClasses}`;
+                el.innerHTML = `<div class="w-2 h-2 rounded-full shadow-sm ${dotClass}"></div> ${text}`;
+            }
+        };
+
+        window.updateCloudSettings = () => {
+            window.appData.cloudShape = document.getElementById('shape-select').value;
+            renderDOMCloud();
+        };
+
+        window.updateCanvasAnimation = () => {
+            const anim = document.getElementById('anim-select').value;
+            const wrapper = document.getElementById('canvas-wrapper');
+            
+            wrapper.classList.remove('animate-float-slow', 'animate-pulse-slow', 'animate-spin-slow');
+            
+            if (window.appData.animationFrame) {
+                cancelAnimationFrame(window.appData.animationFrame);
+                window.appData.animationFrame = null;
+            }
+            if (anim === 'flying') { renderDOMCloud(); return; }
+            if (anim === 'float') wrapper.classList.add('animate-float-slow');
+            if (anim === 'pulse') wrapper.classList.add('animate-pulse-slow');
+            if (anim === 'spin') wrapper.classList.add('animate-spin-slow');
+            renderDOMCloud();
+        };
+
+        function isInsideShape(x, y, shape) {
+            switch(shape) {
+                case 'circle': return (x*x + y*y) <= 1;
+                case 'ellipse': return ( (x*x) + (y*y/0.4) ) <= 1; 
+                case 'rhombus': return (Math.abs(x) + Math.abs(y)) <= 1;
+                case 'square': return Math.abs(x) <= 1 && Math.abs(y) <= 1;
+                case 'triangle': return y > -0.8 && y < 1 && Math.abs(x) < (1 - y) / 1.5;
+                case 'heart': {
+                    const x2 = x * x; const y2 = y * y;
+                    return Math.pow(x2 + y2 - 1, 3) - x2 * y2 * y <= 0;
+                }
+                case 'star': {
+                    const angle = Math.atan2(y, x);
+                    let r = 0.7 + Math.cos(5 * angle) * 0.3;
+                    return Math.sqrt(x*x + y*y) <= r;
+                }
+                case 'shield': {
+                    if (y < -0.8 || y > 1 || Math.abs(x) > 1) return false;
+                    if (y > 0) return y <= (1 - (x*x * 1.2));
+                    return Math.abs(x) <= 0.9;
+                }
+                default: return (x*x + y*y) <= 1;
+            }
+        }
+
+        function renderDOMCloud() {
+            const container = document.getElementById('dom-cloud-container');
+            if (!container) return;
+            const items = window.appData.items;
+            if (items.length === 0) return;
+            
+            if (window.appData.animationFrame) {
+                cancelAnimationFrame(window.appData.animationFrame);
+                window.appData.animationFrame = null;
+            }
+
+            container.innerHTML = ''; 
+            const rect = container.getBoundingClientRect();
+            if (rect.width === 0) return; 
+
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const isFlying = document.getElementById('anim-select') && document.getElementById('anim-select').value === 'flying';
+            
+            const placedBoxes = [];
+            const maxWeight = Math.max(...items.map(i => i.weight || 0), 1);
+            
+            // Modern, sophisticated palette
+            const modernColors = ['#0055a4', '#0f172a', '#da291c', '#334155', '#475569', '#1e293b'];
+
+            items.forEach((item, index) => {
+                const el = document.createElement(item.type === 'text' ? 'span' : 'img');
+                el.className = 'cloud-item font-extrabold tracking-tight drop-shadow-sm';
+                
+                let isRotated = false;
+                let rotAngle = 0;
+
+                if (item.type === 'text') {
+                    el.innerText = item.text;
+                    el.style.color = modernColors[index % modernColors.length];
+                    const baseSize = rect.width < 600 ? 14 : 22;
+                    const size = baseSize + ((item.weight / maxWeight) * (baseSize * 2.5));
+                    el.style.fontSize = `${size}px`;
+                    
+                    if (!isFlying) {
+                        isRotated = Math.random() > 0.75;
+                        rotAngle = isRotated ? (Math.random() > 0.5 ? 90 : -90) : 0;
+                    }
+                } else if (item.type === 'image') {
+                    el.src = item.data;
+                    el.style.maxWidth = (rect.width < 600 ? '70px' : '120px');
+                    el.style.borderRadius = '12px';
+                    el.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                }
+
+                el.style.opacity = '0';
+                container.appendChild(el);
+                
+                const baseW = el.offsetWidth + 16; 
+                const baseH = el.offsetHeight + 16;
+
+                const visualW = isRotated ? baseH : baseW;
+                const visualH = isRotated ? baseW : baseH;
+
+                if (isFlying) {
+                    el.style.left = `${Math.max(visualW, Math.random() * (rect.width - visualW))}px`;
+                    el.style.top = `${Math.max(visualH, Math.random() * (rect.height - visualH))}px`;
+                    el.dataset.vx = (Math.random() - 0.5) * 3; 
+                    el.dataset.vy = (Math.random() - 0.5) * 3; 
+                    el.dataset.x = parseFloat(el.style.left);
+                    el.dataset.y = parseFloat(el.style.top);
+                    el.style.opacity = '1';
+                    return; 
+                }
+
+                let placed = false;
+                let angle = 0;
+                let radius = 0;
+                const a = 5; 
+                const maxAttempts = 1000;
+                let attempts = 0;
+
+                while (!placed && attempts < maxAttempts) {
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+                    
+                    const nx = x / (centerX * 0.85);
+                    const ny = y / (centerY * 0.85);
+
+                    if (isInsideShape(nx, ny, window.appData.cloudShape || 'circle')) {
+                        const box = { 
+                            left: centerX + x - visualW/2, 
+                            top: centerY + y - visualH/2, 
+                            right: centerX + x + visualW/2, 
+                            bottom: centerY + y + visualH/2 
+                        };
+                        
+                        let overlap = placedBoxes.some(p => !(box.right < p.left || box.left > p.right || box.bottom < p.top || box.top > p.bottom));
+                        
+                        if (!overlap) {
+                            el.style.left = `${centerX + x}px`;
+                            el.style.top = `${centerY + y}px`;
+                            el.style.opacity = '1';
+                            
+                            if (isRotated && rotAngle !== 0) {
+                                el.style.transform = `translate(-50%, -50%) rotate(${rotAngle}deg)`;
+                            } else {
+                                el.style.transform = `translate(-50%, -50%)`;
+                            }
+
+                            placedBoxes.push(box);
+                            placed = true;
+                        }
+                    }
+                    
+                    angle += 0.5; 
+                    radius = a * angle;
+                    attempts++;
+                }
+
+                if (!placed) el.remove(); 
+            });
+
+            if (isFlying) animateFlyingWords();
+        }
+
+        function animateFlyingWords() {
+            const container = document.getElementById('dom-cloud-container');
+            const rect = container.getBoundingClientRect();
+            const items = container.querySelectorAll('.cloud-item');
+            
+            items.forEach(el => {
+                let x = parseFloat(el.dataset.x);
+                let y = parseFloat(el.dataset.y);
+                let vx = parseFloat(el.dataset.vx);
+                let vy = parseFloat(el.dataset.vy);
+                
+                x += vx; y += vy;
+                
+                const w = el.offsetWidth / 2; const h = el.offsetHeight / 2;
+                
+                if (x - w < 0 || x + w > rect.width) { vx *= -1; x += vx; }
+                if (y - h < 0 || y + h > rect.height) { vy *= -1; y += vy; }
+                
+                el.dataset.x = x; el.dataset.y = y;
+                el.dataset.vx = vx; el.dataset.vy = vy;
+                
+                el.style.left = `${x}px`;
+                el.style.top = `${y}px`;
+            });
+            
+            window.appData.animationFrame = requestAnimationFrame(animateFlyingWords);
+        }
+
+        window.initGuest = () => { switchView('view-guest'); window.appData.isHost = false; window.renderReactions(); };
+        window.initHost = () => { switchView('view-host'); window.appData.isHost = true; setupHostEnvironment(); };
+        window.resetApp = () => { window.appData.isHost = false; if (window.appData.unsubscribe) window.appData.unsubscribe(); switchView('view-start'); };
+
+        async function authenticateAndReady() {
+            try {
+                if (firebaseConfig.apiKey.includes("ВСТАВЬТЕ")) throw new Error("Ключи Firebase не настроены");
+                const app = initializeApp(firebaseConfig);
+                window.appData.db = getFirestore(app);
+                window.appData.collectionRef = collection(window.appData.db, 'fns_interactive_session');
+            } catch (error) {
+                window.appData.collectionRef = { fake: true }; 
+                window.appData.dbError = error.code || error.message;
+            }
+
+            checkUrlForGuestMode();
+            if (document.getElementById('view-guest').classList.contains('hidden') && 
+                document.getElementById('view-host').classList.contains('hidden')) {
+                switchView('view-start');
+            }
+        }
+
+        authenticateAndReady();
+    </script>
+</body>
+</html>
